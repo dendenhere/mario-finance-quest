@@ -295,10 +295,32 @@ html, body {
   gap: 12px;
 }
 
-.age-header-left { display: flex; flex-direction: column; gap: 2px; }
+.age-header-left { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; }
 .age-label { font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.age-number { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--gold); line-height: 1; }
-.age-range { font-size: 0.72rem; color: var(--muted); font-weight: 700; }
+.age-number { font-family: 'Fredoka One', cursive; font-size: 2.6rem; color: var(--gold); line-height: 1; }
+.age-range { font-size: 0.7rem; color: var(--muted); font-weight: 700; }
+
+/* ─── PIXEL CHARACTER ─────────────────────────────────────────── */
+.age-header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.age-header-center canvas {
+  width: 80px;
+  height: 100px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 10px;
+  box-shadow: 0 0 16px rgba(255,215,0,0.35), 0 4px 12px rgba(0,0,0,0.6);
+  animation: charGlow 2s ease-in-out infinite alternate;
+}
+@keyframes charGlow {
+  from { box-shadow: 0 0 10px rgba(255,215,0,0.25), 0 4px 12px rgba(0,0,0,0.5); }
+  to   { box-shadow: 0 0 24px rgba(255,215,0,0.55), 0 4px 16px rgba(0,0,0,0.7); }
+}
 
 .age-header-right {
   display: flex;

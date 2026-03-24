@@ -164,14 +164,15 @@ var state = {
   investments: 0, passiveIncome: 0, hasLifeInsurance: false, hasHealthInsurance: false,
   stepIndex: 0, phase: 'intro', diceRolled: false, luckEvent: null, lastDiceValue: null,
   selectedChoice: null, selectedChoiceCategory: 'property',
-  history: [], totalGood: 0, totalBad: 0, bestEvent: null, worstEvent: null, lastNetWorthChange: 0
+  history: [], totalGood: 0, totalBad: 0, bestEvent: null, worstEvent: null, lastNetWorthChange: 0,
+  lastEventType: 'neutral'
 };
 
 function saveState() { try { localStorage.setItem('lifeMonopoly_v3', JSON.stringify(state)); } catch(e) {} }
 function loadState() { try { var s = localStorage.getItem('lifeMonopoly_v3'); if (s) { var p = JSON.parse(s); for (var k in p) state[k] = p[k]; } } catch(e) {} }
 function resetState() {
   localStorage.removeItem('lifeMonopoly_v3');
-  state = { currentAge:START_AGE, cash:STARTING_CASH, netWorth:STARTING_CASH, investments:0, passiveIncome:0, hasLifeInsurance:false, hasHealthInsurance:false, stepIndex:0, phase:'intro', diceRolled:false, luckEvent:null, lastDiceValue:null, selectedChoice:null, selectedChoiceCategory:'property', history:[], totalGood:0, totalBad:0, bestEvent:null, worstEvent:null, lastNetWorthChange:0 };
+  state = { currentAge:START_AGE, cash:STARTING_CASH, netWorth:STARTING_CASH, investments:0, passiveIncome:0, hasLifeInsurance:false, hasHealthInsurance:false, stepIndex:0, phase:'intro', diceRolled:false, luckEvent:null, lastDiceValue:null, selectedChoice:null, selectedChoiceCategory:'property', history:[], totalGood:0, totalBad:0, bestEvent:null, worstEvent:null, lastNetWorthChange:0, lastEventType:'neutral' };
 }
 
 function fmt(n) {
@@ -296,6 +297,9 @@ function renderGame() {
     '<div class="age-label">Current Age</div>' +
     '<div class="age-number">' + age + '</div>' +
     '<div class="age-range">Ages ' + age + ' to ' + (age + STEP - 1) + '</div>' +
+    '</div>' +
+    '<div class="age-header-center">' +
+    '<canvas id="char-canvas" width="128" height="160" style="image-rendering:pixelated;image-rendering:crisp-edges;border-radius:12px;box-shadow:0 0 20px rgba(255,215,0,0.3),0 4px 16px rgba(0,0,0,0.5);"></canvas>' +
     '</div>' +
     '<div class="age-header-right">' +
     '<div class="life-stage-badge">' + stage.emoji + ' ' + stage.name + '</div>' +
@@ -482,6 +486,10 @@ function attachEvents() {
   });
   var btnEnd = document.getElementById('btn-end-turn');
   if (btnEnd) btnEnd.onclick = handleEndTurn;
+  // Start pixel character animation if canvas is present
+  if (document.getElementById('char-canvas') && typeof CHAR !== 'undefined') {
+    CHAR.startAnimation('char-canvas', function() { return state; });
+  }
 }
 
 function scrollBoardToCurrent() {
@@ -537,6 +545,8 @@ function handleRoll() {
       state.cash += actualAmount;
       updateNetWorth();
       addHistory(state.currentAge, '🎲 ' + event.name, actualAmount);
+      // Track event type for character reaction
+      state.lastEventType = actualAmount > 0 ? 'good' : actualAmount < 0 ? 'bad' : 'neutral';
       if (actualAmount > 0) showToast('🎉 ' + event.name + ': +' + fmt(actualAmount), 'good');
       else if (actualAmount < 0) showToast('😬 ' + event.name + ': -' + fmt(Math.abs(actualAmount)), 'bad');
       else showToast('😐 ' + event.name + ': Nothing happened');
@@ -628,6 +638,7 @@ function handleEndTurn() {
   state.luckEvent = null;
   state.selectedChoice = null;
   state.lastDiceValue = null;
+  state.lastEventType = state.lastNetWorthChange > 0 ? 'good' : state.lastNetWorthChange < 0 ? 'bad' : 'neutral';
   saveState();
   render();
   scrollBoardToCurrent();
